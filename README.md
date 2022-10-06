@@ -38,80 +38,154 @@ Crontab description:
 
 
 The scenario of fully restoring the databases from a .bak copy consists of two stages: 
+
 Stage 1: From full copies:
+
 Correct the /srv/backup/restore.sql script by removing unnecessary lines created during the creation process:
+
 This:-.
+
 RESTORE DATABASE[AUTOPARTNER] FROM DISK = '/srv/backup/AUTOPARTNER.bak' WITH NORECOVERY,
+
 REPLACE, STATS = 5
+
 RESTORE DATABASE[KR_L_WOJCIECH_LURK] FROM DISK = '/srv/backup/KR_L_WOJCIECH_LURK.bak' WITH NORECOVERY,
+
 REPLACE, STATS = 5
+
 And This:(2 rows affected)
+
 And after correction script, let’s run tchem with the command:
+
 /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P 'Passwordofsql' -i /srv/backups/restoreall.sql
+
 (Full copies, so the databases recovered in the first stage will be NORECOVERY
+
 Stage 2: From Differential Copies:
+
 Correct the /srv/backup/diff/restore.sql script as in the previous stage:
+
 RESTORE DATABASE[AUTOPARTNER] FROM DISK = '/srv/backup/diff/AUTOPARTNER.bak' WITH RECOVERY,
+
 REPLACE, STATS = 5
+
 RESTORE DATABASE[KR_L_WOJCIECH_LURK] FROM DISK = '/srv/backup/diff/KR_L_WOJCIECH_LURK.bak' WITH RECOVERY,
+
 REPLACE, STATS = 5
+
 And we run with the command:
+
 /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P 'Passwordofsql' -i /srv/backups/diff/restoreall.sql
+
 The recovered databases in the second stage will be RECOVERY and ready to work.
 
 
+
 Bash session:
+
 root@mssql:/srv/backup/diff# /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P 'Sqlpassword' -i /srv/backup/diff/restoreall.sql
+
 26 percent processed.
+
 52 percent processed.
+
 78 percent processed.
+
 100 percent processed.
+
 Processed 496 pages for database 'KR_L_WOJCIECH_LURK', file 'KR_L_WOJCIECH__LURK_' on file 1.
+
 Processed 2 pages for database 'KR_L_WOJCIECH_LURK', file 'KR_L_WOJCIECH__LURK__log' on file 1.
+
 RESTORE DATABASE successfully processed 498 pages in 0.331 seconds (11.742 MB/sec).
+
 root@mssql:/srv/backup/diff# cd ..
+
 root@mssql:/srv/backup# /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P 'Sqlpassword' -i /srv/backup/restoreall.sql
+
 5 percent processed.
+
 10 percent processed.
+
 15 percent processed.
+
 20 percent processed.
+
 25 percent processed.
+
 30 percent processed.
+
 35 percent processed.
+
 40 percent processed.
+
 45 percent processed.
+
 50 percent processed.
+
 55 percent processed.
+
 60 percent processed.
+
 65 percent processed.
+
 70 percent processed.
+
 75 percent processed.
+
 80 percent processed.
+
 85 percent processed.
+
 90 percent processed.
+
 95 percent processed.
+
 100 percent processed.
+
 Processed 46448 pages for database 'KR_L_WOJCIECH_LURK', file 'KR_L_WOJCIECH__LURK_' on file 1.
+
 Processed 2 pages for database 'KR_L_WOJCIECH_LURK', file 'KR_L_WOJCIECH__LURK__log' on file 1.
+
 RESTORE DATABASE successfully processed 46450 pages in 3.051 seconds (118.940 MB/sec).
+
 root@mssql:/srv/backup# cd diff
+
 root@mssql:/srv/backup/diff# /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P 'Sqlpassword' -i /srv/backup/diff/restoreall.sql
+
 26 percent processed.
+
 52 percent processed.
+
 78 percent processed.
+
 100 percent processed.
+
 Processed 496 pages for database 'KR_L_WOJCIECH_LURK', file 'KR_L_WOJCIECH__LURK_' on file 1.
+
 Processed 2 pages for database 'KR_L_WOJCIECH_LURK', file 'KR_L_WOJCIECH__LURK__log' on file 1.
+
 RESTORE DATABASE successfully processed 498 pages in 0.334 seconds (11
 
+
 Scenario of connecting (multiattach) .mdf and .ldf database files to a working server : 
+
 Copy the .mdf and .ldf files from the copy directory to the directory with the databases after stopping the SQL server:
+
 systemctl stop mssql-server 
+
  cp /srv/data/* /var/opt/mssql/data
+ 
 systemctl start mssql-server
+
 Run the query that performs the connection of databases via ATTACH: 
+
 /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P 'Passwordofsql' -i /srv/data/multiattach.sql
 
+
 WOJCIECH KRÓL
+
 lurk@lurk.com.pl
+
 2022-10-02
+
