@@ -3,6 +3,7 @@
 
 A package of automatic .bash scripts and .sql queries for MSSQL Server for Linux included automatic .bak backups of all databases running on the server, with a mechanism included to generate ready-made .SQL queries for the reverse operation, i.e. restoring the archives.
 NOTE! all .sql queries (restoreall.sql, multiattach.sql) generated automatically during backups should be corrected manually before use by deleting wrong lines:
+
 1. -
 2. ( rows affected)
 I had no idea how to modify the .SQL queries generating them so that these lines are removed during the creation process.
@@ -12,15 +13,23 @@ Greg Robidoux:
 https://www.mssqltips.com/sqlservertip/1070/simple-script-to-backup-all-sql-server-databases/
 
 A working example:
+
 Path to scripts: /root/scripts/
+
 Crontab file:
+
 {
 SHELL=/bin/bash
 PATH=/etc:/bin:/sbin:/usr/bin:/usr/sbin:/root/scripts
+
 0 23 * * * /root/scripts/copy_mdf.sh /srv/data/. 
+
 5 0 * * * 0 rm /srv/backup/*.bak ; /root/scripts/backupall.sh -f /srv/backup/ /root/scripts/restoreall.sql;rm /srv/backup/diff/*.bak  
+
 0 10,12,14,16,18,19,20,21,22 * * 1-7 /root/scripts/backupall.sh -r /srv/backup/diff/ /root/scripts/restoreall.sql 
+
 }
+
 
 Crontab description:
 1. every day at 23:00 copy_mdf.sh stops SQL Server and copies all database files *.mdf, *.ldf to /srv/data/ and generates the multiattach.sql query needed to connect the database files to the server with the ATTACH command placing it with the copies.
@@ -102,6 +111,7 @@ systemctl stop mssql-server
 systemctl start mssql-server
 Run the query that performs the connection of databases via ATTACH: 
 /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P 'Passwordofsql' -i /srv/data/multiattach.sql
+
 WOJCIECH KRÓL
 lurk@lurk.com.pl
 2022-10-02
