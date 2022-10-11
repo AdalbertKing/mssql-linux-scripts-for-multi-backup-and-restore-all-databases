@@ -23,7 +23,7 @@ OPEN db_cursor
 FETCH NEXT FROM db_cursor INTO @name   
 WHILE @@FETCH_STATUS = 0   
 		BEGIN   
-   			SET @fileName = @path + @name +'.BAK'  
+   			SET @fileName = @path + @name +'.bak'  
    			BACKUP DATABASE @name TO DISK = @fileName
  			WITH $(_parameters)
    			FETCH NEXT FROM db_cursor INTO @name   
@@ -35,7 +35,7 @@ WHILE @@FETCH_STATUS = 0
 	BEGIN
 		WHILE @@FETCH_STATUS = 0   
 		BEGIN   
-   			SET @fileName = @path + @name +'.BAK'  
+   			SET @fileName = @path + @name +'.bak'  
    			BACKUP DATABASE @name TO DISK = @fileName
  			WITH DIFFERENTIAL,COMPRESSION 
    			FETCH NEXT FROM db_cursor INTO @name   
@@ -45,7 +45,7 @@ ELSE
 	BEGIN
 		WHILE @@FETCH_STATUS = 0   
 		BEGIN   
-   			SET @fileName = @path + @name +'.BAK'  
+   			SET @fileName = @path + @name +'.bak'  
    			BACKUP DATABASE @name TO DISK = @fileName
  			WITH COMPRESSION 
    			FETCH NEXT FROM db_cursor INTO @name   
