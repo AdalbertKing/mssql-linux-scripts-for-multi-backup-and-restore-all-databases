@@ -26,6 +26,5 @@ fi
 if [[ $4 ]]; then
 	files=$4
 fi
-
 /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P 'Sq!201402' -i $_spath/gensql.sql -v _what=$1 -v _path=$2 -v _recovery=$recovery -v _files=$files -W|sed '1,2d;/affected/d;/^$/d'
 

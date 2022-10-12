@@ -8,9 +8,9 @@
 ##         -e for WITHFORMAT (ERASE OLD backups in target - use carefull! )
 
 ## examples:
-## backupall.sh -f /srv/backup/				-create full backups .bak in /srv/backup/	()
+## backupall.sh -f /srv/backup/				-create full backups .bak in /srv/backup/	
 ## backupall.sh /srv/backup/diff/			-create differential backups .bak in /srv/backup/diff/
-## /backupall.sh -fcue /srv/backup/copies/              -create full backup with FORMAT,NO_COMPRESSION,COPY_ONLY to /srv/backup/copies/
+## /backupall.sh -fcue /srv/backup/copies/  -create full backup with FORMAT,NO_COMPRESSION,COPY_ONLY to /srv/backup/copies/
 
 # WOJCIECH KROL 2022-10-05
 # lurk@lurk.com.pl
@@ -36,10 +36,7 @@ done
 parameters=$nocompression$parameters   # WITH COMPRESS OR WITH NO_COMPRESS
 parameters=$withformat$parameters      # WITH FORMAT OR WITHOUT
 
-
-
 echo "parameters of backups:" $parameters 
-
 shift "$((OPTIND - 1))"
 
 if [[ -z $1 ]]; then
@@ -61,6 +58,3 @@ echo "path of BACKUPS:" $1
 echo Script path $_spath
 
 /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P 'Sq!201402' -i $_spath/backupall.sql -v _path=$1 -v _parameters=$parameters
-##/opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P 'Sq!201402' -i $_spath/gensql.sql restore -v _path=$1 -v _recovery=$model _files=1 -W|sed '1,2d;/affected/d;/^$/d' >$out
-
-#cp $out $1

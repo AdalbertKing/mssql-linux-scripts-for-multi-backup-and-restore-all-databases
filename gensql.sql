@@ -2,12 +2,10 @@ DECLARE @folderpath VARCHAR (1000)
 DECLARE @recovery VARCHAR (12)
 DECLARE @What VARCHAR (12)
 DECLARE @files VARCHAR (12)
-
 SELECT @folderpath = '$(_path)' -- Backup Location
 SELECT @recovery = '$(_recovery)' -- model of recovery
 SELECT @what = '$(_what)' -- Type of generated .sql script
-SELECT @files = '$(_files)' -- Type of generated .sql script
-
+SELECT @files = '$(_files)' -- No. in FILES parameter
 
 IF @what = 'restore'
 	BEGIN
@@ -30,10 +28,8 @@ REPLACE, STATS = 5, FILE = $(_files)'
 
 	END;
 
-
 IF @what = 'attach'
 	BEGIN
-
 		SELECT
 		'CREATE DATABASE [' + name +'] ON
 		( FILENAME = N'''+@folderpath + name + '.mdf'' ),
@@ -42,7 +38,6 @@ IF @what = 'attach'
 		'
 		FROM master.dbo.sysdatabases
 		WHERE name not in ('master','msdb','model','tempdb')
-
 		ORDER BY name
 	END;
 
@@ -53,11 +48,3 @@ IF @what = 'setrecovery'
 		WHERE name NOT IN ('master','model','msdb','tempdb','distribution')
 
 	END;
-
-
-
-
-
-
-
-
