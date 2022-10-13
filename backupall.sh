@@ -44,17 +44,4 @@ if [[ -z $1 ]]; then
 	exit 1
 fi
 
-#if [[ $2 ]]; then
-#	out=$2
-#fi
-
-echo "path of BACKUPS:" $1
-
-#echo "state of future recovered bases by generated script:" $model 
-#echo "STDOUT:" $out
-
-#rm $1*.BAK
-#rm $2*.BAK
-echo Script path $_spath
-
 /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P 'Sq!201402' -i $_spath/backupall.sql -v _path=$1 -v _parameters=$parameters
