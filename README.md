@@ -3,15 +3,58 @@ The main application, is a complete backup with automatic recovery procedure.
 The second application is to implement a mirror of two or more SQL servers by automatically uploading differential backups of all running databases to the backup server.
 (E.g. between MSSQL Server for Linux and for Windows )
 
-I used scripts by Paul Hewson:
+Scripts description:
 
-https://www.sqlserversnippets.com/2013/10/generate-scripts-to-attach-multiple.html
+1. backupall.sh -[option] [backup_path] -Backup all databases to the backup_path with options from bash uses backup.sql
 
-Greg Robidoux:
+        [options]:
+		
+		-f for FULL BACKUP (DEFAULT DIFFERENTIAL)
+        -c for COPY_ONLY (FULL BACKUP OUTSIDE OD SHEDULER )  
+        -u for NO_COMPRESSION
+        -e for WITHFORMAT
+		
+2. backup.sql - used by backupall.sh	-SQL query with options for create backup all databases on STDOUT
 
-https://www.mssqltips.com/sqlservertip/1070/simple-script-to-backup-all-sql-server-databases/
+launch by comend:
+
+/opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P 'sqlpassword' -i $_spath/backupall.sql -v _path=$1 -v _parameters=$parameters
+
+@path = '$(_path)'    	-- database backup directory
+@par = '$(_parameters)'	-- parameters added for restore/attach option to generated script {a.k backupall.sh}
+
+3. gensql.sh $1 $2 $3 $4
+
+ $1 - kind of scripts on output (attach|restore|setrecovery) 
+ $2 - path of backups (it must be finished by "/")
+ $3 - state of restored databases by generated .sql query (RECOVERY/NORECOVERY, DEFAULT is NORECOVERY) 
+ $4 - In restore mode it's Number of file from  backup media .bak(FILES = n -absent equal to 1 )
+
+4. gensql.sql	- used by gensql.sh		-SQL query with options to generate .sql scipt to the STDOUT for multile operation on databases
+
+launched by comand:
+
+/opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P 'Sq!201402' -i $_spath/gensql.sql -v _what=$1 -v _path=$2 -v _recovery=$recovery -v _files=$files -W|sed '1,2d;/affected/d;/^$/d'
+
+@folderpath = '$(_path)' 	-- Backup Location
+@recovery = '$(_recovery)' 	-- model of recovery
+@what = '$(_what)' 			-- Type of generated .sql script
+@files = '$(_files)' 		-- FILES parameter
+
+4. copy_mdf.sh $1					 -Copy all databas files from sql server data after stop sql server, than start sql server.
+
+ $1 - path for copy
+ 
+I used scripts by Paul Hewson: https://www.sqlserversnippets.com/2013/10/generate-scripts-to-attach-multiple.html
+
+Greg Robidoux: https://www.mssqltips.com/sqlservertip/1070/simple-script-to-backup-all-sql-server-databases/
+
+
+__________________________________________________________________________________________________________________________________________________________________________________________
+
 
 A working example:
+
 	Path to scripts: /root/scripts/
 	Crontab file:
 	{
@@ -113,6 +156,13 @@ CREATE DATABASE [KR_L_WOJCIECH_LURK] ON
 
  FOR ATTACH
  
+___________________________________________________________________________________________________________________________________________________________________________________________
+
+I hope that my work will help someone to implement and automate backup or mirror on SQL server for Linux with multiple databases. I am an ardent advocate of deploying MSSQL under Linux, which works better than under Windows, especially with applications using multiple databases in a single SQL server instance. The combination of automatic differential/full backups and ZFS file system gives a much higher level of security and flexibility. Recommended.
+I am preparing a similar script package for Sql Server under Windows + CMD/PowerShell. I would appreciate reporting bugs and suggestions for improving the procedure.
+
+
+
  
 
 						WOJCIECH KROL
