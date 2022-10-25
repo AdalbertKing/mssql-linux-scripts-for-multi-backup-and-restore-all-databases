@@ -43,5 +43,4 @@ if [[ -z $1 ]]; then
 	echo 'error: path of backups must be specified as the first argument' >&2
 	exit 1
 fi
-
 /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P 'Sq!201402' -i $_spath/backupall.sql -v _path=$1 -v _parameters=$parameters
