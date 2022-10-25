@@ -9,10 +9,11 @@ Scripts description:
 
         [options]:
 		
-		-f for FULL BACKUP (DEFAULT DIFFERENTIAL)
+	-f for FULL BACKUP (DEFAULT DIFFERENTIAL)
         -c for COPY_ONLY (FULL BACKUP OUTSIDE OD SHEDULER )  
         -u for NO_COMPRESSION
-        -e for WITHFORMAT
+        -e for FORMAT
+	-i for INIT
 		
 2. backup.sql - used by backupall.sh	-SQL query with options for create backup all databases on STDOUT
 
@@ -32,18 +33,18 @@ launch by comend:
 
 4. gensql.sql	- used by gensql.sh		-SQL query with options to generate .sql scipt to the STDOUT for multile operation on databases
 
-launched by comand:
+launched by command:
 
-/opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P 'Sq!201402' -i $_spath/gensql.sql -v _what=$1 -v _path=$2 -v _recovery=$recovery -v _files=$files -W|sed '1,2d;/affected/d;/^$/d'
+/opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P 'sqlpassword' -i $_spath/gensql.sql -v _what=$1 -v _path=$2 -v _recovery=$recovery -v _files=$files -W|sed '1,2d;/affected/d;/^$/d'
 
 @folderpath = '$(_path)' 	-- Backup Location
 @recovery = '$(_recovery)' 	-- model of recovery
-@what = '$(_what)' 			-- Type of generated .sql script
+@what = '$(_what)' 		-- Type of generated .sql script (attach|restore|setrecovery)
 @files = '$(_files)' 		-- FILES parameter
 
-4. copy_mdf.sh $1					 -Copy all databas files from sql server data after stop sql server, than start sql server.
+4. copy_mdf.sh $1		 -Copy all databas files from sql server data after stop sql server, than start sql server.
 
- $1 - path for copy
+ $1 - destination path
  
 I used scripts by Paul Hewson: https://www.sqlserversnippets.com/2013/10/generate-scripts-to-attach-multiple.html
 
@@ -59,16 +60,11 @@ A working example:
 	Crontab file:
 	{
 SHELL=/bin/bash
-
 PATH=/etc:/bin:/sbin:/usr/bin:/usr/sbin:/root/scripts
-
-0 23 * * * /root/scripts/copy_mdf.sh /srv/data/
-
-30 23 * * * /root/scripts/gensql.sh attach /srv/data/ > /srv/data/attachall.sql
-
-5 0 * * 0  rm /srv/backup/*.bak;rm /srv/backup/*.BAK; /root/scripts/backupall.sh -f /srv/backup/>> /root/scripts/cron.log;/root/scripts/gensql.sh restore /srv/backup/ norecovery > /srv/backup/restoreall.sql;rm /srv/backup/diff/*.bak; rm /srv/backup/diff/*.BAK
-
-0 10,12,14,16,18,20,22 * * 1-7 /root/scripts/backupall.sh /srv/backup/diff/ >>/root/scripts/cron.log;/root/scripts/gensql.sh restore /srv/backup/diff/ norecovery >/srv/backup/diff/restoreall.sql;gensql.sh setrecovery /srv/backup/diff/ recovery >/srv/backup/diff/setrecoveryall.sql 
+0 23 * * * /root/scripts/copy_mdf.sh /srv/data/ 
+30 23 * * * /root/scripts/gensql.sh attach /srv/data/ >/srv/data/attachall.sql
+15 23 * * 6  rm /srv/backup/*.bak;/root/scripts/backupall.sh -fei /srv/backup/; /root/scripts/gensql.sh restore /srv/backup/ norecovery >/srv/backup/restoreall.sql
+0 10,12,14,16,18,20,22 * * 1-7 /root/scripts/backupall.sh -e /srv/backup/diff/; /root/scripts/gensql.sh restore /srv/backup/diff/ norecovery >/srv/backup/diff/restoreall.sql; gensql.sh setrecovery /srv/backup/diff/ recovery >/srv/backup/diff/setrecoveryall.sql 
 
 	}
 	
@@ -76,47 +72,28 @@ Crontab description:
 	
 	1. every day at 23:00 copy_mdf.sh stops SQL Server and copies all database files *.mdf, *.ldf to /srv/data/ 
 	
-    2. every day at 23:30 after restart sql server generate script attachall.sql placed with copied data half an hour earlier.
+    	2. every day at 23:30 after restart sql server generate script attachall.sql placed with copied data half an hour earlier.
 		
-	3. once a week on Sunday 00:05:00 backupall.sh does a full backup (-f) of the running databases to /srv/backup/ and generates the restoreall.sql query needed to restore them placing it with the backups folder. After which it removes the old differential copies from the /srv/backup/diff/*.bak directory
+	3. once a week on Sunday 00:05:00 backupall.sh does a full backup (-f) of the running databases with format and init parameter to clear .bak file to /srv/backup/ and generates the restoreall.sql query needed to restore them placing it with the backups folder. 
 	
-	4. every two hours every day from 10:00 a.m. to 10:00 p.m. backupall.sh creates differential copies (no -f) of all the databases in /srv/backup/diff/ and generates the restoreall.sql query needed to restore them with the NORECOVERY parameter (-r) and setrecoveryall.sql -script for swith 'databases for recovery state. 
+	4. every two hours every day from 10:00 a.m. to 10:00 p.m. backupall.sh creates differential copies (no -f) with format parameter of all the databases in /srv/backup/diff/ and generates the restoreall.sql query needed to restore them with the NORECOVERY parameter (-r) and setrecoveryall.sql -script for swith 'databases for recovery state. 
 	
 The scenario of fully restoring the databases from a .bak copy consists of three stages: 
 
 Stage 1: running an automatically generated .sql query restoreall.sql for recovery databases from .bak for FULL copies:
     
-	/opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P 'Passwordofsql' -i /srv/backups/restoreall.sql
+	/opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P 'sqlpassword' -i /srv/backups/restoreall.sql
 	
 	(Full copies, so the databases recovered in the first stage will be NORECOVERY. Since we assume that there are still differential copies waiting to be restored
-
-{automatically generated by backupall.sh}
-
-	RESTORE DATABASE[AUTOPARTNER] FROM DISK = '/srv/backup/AUTOPARTNER.bak' WITH NORECOVERY,
-	
-	REPLACE, STATS = 5
-	
-	RESTORE DATABASE[KR_L_WOJCIECH_LURK] FROM DISK = '/srv/backup/KR_L_WOJCIECH_LURK.bak' WITH NORECOVERY,
-	
-	REPLACE, STATS = 5
 
 
 Stage 2: running an automatically generated .sql query restoreall.sql From Differential Copies:
     
-	/opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P 'Passwordofsql' -i /srv/backups/diff/restoreall.sql
+	/opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P 'sqlpassword' -i /srv/backups/diff/restoreall.sql
 	
 	The recovered databases in the second stage will be NORECOVERY (perheps to the next tasks of recovery )
 	
-     {automatically generated by backupall.sh}
-	 
-	RESTORE DATABASE[AUTOPARTNER] FROM DISK = '/srv/backup/diff/AUTOPARTNER.bak' WITH RECOVERY,
-	
-	REPLACE, STATS = 5
-	
-	RESTORE DATABASE[KR_L_WOJCIECH_LURK] FROM DISK = '/srv/backup/diff/KR_L_WOJCIECH_LURK.bak' WITH NORECOVERY,
-	
-	REPLACE, STATS = 5
-	
+     	
 Stage 3: running an automatically generated query setrecoveryall.sql for switch all databases into RECOVERY state. 
 _________________________________________________________________________________________________________________________________________________________________________________________
 
@@ -126,36 +103,18 @@ The alternative scenario appends to sql server all previously copied .mdf and.ld
 
 	cp /srv/data/* /var/opt/mssql/data
 	
-	chown mssql /var/opt/mssql/data/*.BAK
+	chown mssql /var/opt/mssql/data/*.bak
 	
-	chown mssql /var/opt/mssql/data/*.LDF
+	chown mssql /var/opt/mssql/data/*.ldf
 	
-	chgrp mssql /var/opt/mssql/data/*.BAK
+	chgrp mssql /var/opt/mssql/data/*.bak
 	
-	chgrp mssql /var/opt/mssql/data/*.LDF
+	chgrp mssql /var/opt/mssql/data/*.ldf
 	
 running an automatically generated .sql query that performs ATTACH for every databases: 
 
-	/opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P 'Passwordofsql' -i /srv/data/attachall.sql
+	/opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P 'sqlpassword' -i /srv/data/attachall.sql
 	
-{automatically generated by copy_mdf.sh}:
-
-CREATE DATABASE [AUTOPARTNER] ON
-
-( FILENAME = N'/var/opt/mssql/data/AUTOPARTNER.mdf' ),
-
-( FILENAME = N'/var/opt/mssql/data/AUTOPARTNER_log.ldf' )
-
- FOR ATTACH
- 
-CREATE DATABASE [KR_L_WOJCIECH_LURK] ON
-
-( FILENAME = N'/var/opt/mssql/data/KR_L_WOJCIECH_LURK.mdf' ),
-
-( FILENAME = N'/var/opt/mssql/data/KR_L_WOJCIECH_LURK_log.ldf' )
-
- FOR ATTACH
- 
 ___________________________________________________________________________________________________________________________________________________________________________________________
 
 I hope that my work will help someone to implement and automate backup or mirror on SQL server for Linux with multiple databases. I am an ardent advocate of deploying MSSQL under Linux, which works better than under Windows, especially with applications using multiple databases in a single SQL server instance. The combination of automatic differential/full backups and ZFS file system gives a much higher level of security and flexibility. Recommended.
