@@ -78,7 +78,7 @@ Crontab description:
 		
 	3. At 23:15 on Saturday backupall.sh does a full backup with format and init parameter (-fei) to clear .bak file of the running databases into /srv/backup/ and generates the restoreall.sql query needed to restore them placing it with the backups folder. 
 	
-	4. every two hours every day from 10:00 a.m. to 10:00 p.m. backupall.sh creates differential copies with format parameter (-e) of all the databases in /srv/backup/diff/ and generates the restoreall.sql query needed to restore them with the NORECOVERY parameter (-r) and setrecoveryall.sql -script for swith 'databases for recovery state. 
+	4. every two hours from 10:00 a.m. to 10:00 p.m. from monday to saturday backupall.sh creates full copies of newly added databases (without any fullbackup) with scripts in /srv/backup/ and after  this makes differential copies with format parameter (-e) of all the databases in /srv/backup/diff/ and generates the restoreall.sql query needed to restore them with the NORECOVERY parameter (-r) and setrecoveryall.sql -script for swith 'databases for recovery state. 
 	
 
 The scenario of fully restoring the databases from a .bak copy consists of three stages: 
