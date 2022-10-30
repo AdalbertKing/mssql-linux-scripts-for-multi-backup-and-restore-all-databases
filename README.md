@@ -142,21 +142,3 @@ I hope that my work will help someone to implement and automate backup or mirror
 						WOJCIECH KROL
 						lurk@lurk.com.pl
 						2022-10-11
-
-
-
-I hope that my work will help someone to implement and automate backup or mirror on SQL server for Linux with multiple databases. I am an ardent advocate of deploying MSSQL under Linux, which works better than under Windows, especially with applications using multiple databases in a single SQL server instance. The combination of automatic differential/full backups and ZFS file system gives a much higher level of security and flexibility. Recommended.
-I am preparing a similar script package for Sql Server under Windows + CMD/PowerShell. I would appreciate reporting bugs and suggestions for improving the procedure.
-
-Future scenario:
-I want to implement parameter FILES = n to restoresql.sql query, which will allow to operate on continuos .bak file with many backups, and automatically restore the last differential from many others.
-Problem is that every databases could have different numbers of backups in own .bak file.
-
-
-
- 
-
-						WOJCIECH KROL
-						lurk@lurk.com.pl
-						2022-10-11
-
