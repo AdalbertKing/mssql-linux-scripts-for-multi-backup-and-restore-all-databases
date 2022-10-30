@@ -64,10 +64,10 @@ ________________________________________________________________________________
 
 A working example:
 
-	1. Path to scripts:		 			/root/scripts/
-	2. Path of full backups: 			/srv/backup/
-	3. Path od differential backups:	/srv/backup/diff/
-	4. Path of copies .mdf and .ldf:    /srv/data/ 
+	1. Path to scripts:				/root/scripts/
+	2. Path of full backups: 		/srv/backup/
+	3. Path od differential backups:/srv/backup/diff/
+	4. Path of copies .mdf and .ldf:/srv/data/ 
 	
 		
 Crontab description:
