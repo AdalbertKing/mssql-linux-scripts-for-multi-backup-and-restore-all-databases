@@ -23,16 +23,15 @@ _spath=/root/scripts
 nocompression=''
 withformat=''
 withinit=''
-onlynew=all
 
-while getopts 'fcuein' option; do      
+while getopts 'fcuei' option; do
+      
 	case "$option" in
 		f) parameters=COMPRESSION;;
 		c) parameters=COMPRESSION,COPY_ONLY;;
 		u) nocompression=NO_;;
 		e) withformat=FORMAT,;;
-		i) withinit=INIT,;;
-		n) onlynew=new;; 
+		i) withinit=INIT,;; 
 		*) usage; exit 1;;
 	esac
 done
@@ -50,6 +49,6 @@ if [[ -z $1 ]]; then
 	exit 1
 fi
 
-/opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P 'Sq!201402' -i $_spath/backupall.sql -v _path=$1 -v _parameters=$parameters -v _onlynew=$onlynew
+/opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P 'Sq!201402' -i $_spath/backupall.sql -v _path=$1 -v _parameters=$parameters
 
 

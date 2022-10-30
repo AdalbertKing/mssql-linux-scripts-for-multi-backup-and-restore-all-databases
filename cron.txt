@@ -1,11 +1,9 @@
 SHELL=/bin/bash
-
 PATH=/etc:/bin:/sbin:/usr/bin:/usr/sbin:/root/scripts
-
-0 23 * * * /root/scripts/copy_mdf.sh /srv/data/ 
-
+0 23 * * * /root/scripts/copy_mdf.sh /srv/data/ >/root/scripts/cron.log
 30 23 * * * /root/scripts/gensql.sh attach /srv/data/ >/srv/data/attachall.sql
+15 23 * * 6  rm /srv/backup/*.bak;/root/scripts/backupall.sh -fei /srv/backup/ >>/root/scripts/cron.log;/root/scripts/gensql.sh restore /srv/backup/ norecovery > /srv/backup/restoreall.sql;rm /srv/backup/diff/*.bak; rm /srv/backup/diff/*.BAK
+0 10,12,14,16,18,20 * * 1-6 /root/scripts/gensql.sh -n restore /srv/backup/ norecovery>/srv/backup/restorenew.sql;/root/scripts/gensql.sh -n setrecovery /srv/backup/ recovery >/srv/backup/setrecoverynew.sql;/root/scripts/backupall.sh -fein /srv/backup/;cat /srv/backup/restorenew.sql>>/srv/backup/restoreall.sql;cat /srv/backup/setrecoverynew.sql>>/srv/backup/setrecovery.sql;/root/scripts/backupall.sh -e /srv/backup/diff/;/root/scripts/gensql.sh restore /srv/backup/diff/ norecovery >/srv/backup/diff/restoreall.sql;/root/scripts/gensql.sh setrecovery /srv/backup/diff/ recovery >/srv/backup/diff/setrecovery.sql
 
-15 23 * * 6  rm /srv/backup/*.bak;/root/scripts/backupall.sh -fei /srv/backup/; /root/scripts/gensql.sh restore /srv/backup/ norecovery >/srv/backup/restoreall.sql
 
-0 10,12,14,16,18,20,22 * * 1-7 /root/scripts/backupall.sh -e /srv/backup/diff/; /root/scripts/gensql.sh restore /srv/backup/diff/ norecovery >/srv/backup/diff/restoreall.sql; gensql.sh setrecovery /srv/backup/diff/ recovery >/srv/backup/diff/setrecoveryall.sql
+

@@ -1,7 +1,9 @@
 # Copy all .mdf .ldf files from SQL server after stop to the $1 
-# Copy all databases from SQL DATA folder to backup folder 
+#  
 _mdfpath="/var/opt/mssql/data/"
+_spath=/root/scripts
 
+#Copy all databases from DATA folder to backup folder 
 systemctl stop mssql-server & process_id=$!
 wait $process_id
 echo "SQL server stopped"

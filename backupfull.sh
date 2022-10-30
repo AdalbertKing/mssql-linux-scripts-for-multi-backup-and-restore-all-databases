@@ -25,7 +25,8 @@ withformat=''
 withinit=''
 onlynew=all
 
-while getopts 'fcuein' option; do      
+while getopts 'fcuein' option; do
+      
 	case "$option" in
 		f) parameters=COMPRESSION;;
 		c) parameters=COMPRESSION,COPY_ONLY;;
