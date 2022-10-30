@@ -11,14 +11,13 @@ Scripts description:
 
 1. backupall.sh -[option] [backup_path] -Backup all databases to the backup_path with options from bash uses backup.sql
 
-        [options]:
-		
-	-f for FULL BACKUP (DEFAULT DIFFERENTIAL)
+        [options]:		
+		-f for FULL BACKUP (DEFAULT DIFFERENTIAL)
         -c for COPY_ONLY (FULL BACKUP OUTSIDE OF BACKUP PLAN)  
         -u for NO_COMPRESSION
         -e for FORMAT
-	-i for INIT
-	-n for only new databases created after last full backup
+		-i for INIT
+		-n for only new databases created after last full backup
 		
 2. backup.sql - used by backupall.sh	-SQL query with options for create backup all databases on STDOUT
 
@@ -32,10 +31,9 @@ sqlcmd -S [ip_sqlserver] -U sa -P [sqlpassword] -i backupall.sql -v _path="%2" -
 
 3. gensql.sh -[option] [kind] [path of backups] [recovery|noreovery]
 
-[options]:
-	
-	-n for only new databases created after last full backup
-	-p FILES = parameter (not used yet, always is set to 1)
+		[options]:	
+		-n for only new databases created after last full backup
+		-p FILES = parameter (not used yet, always is set to 1)
 
  $1 - kind of scripts on output (attach|restore|setrecovery) 
  $2 - path of backups (it must be finished by "/")
@@ -76,7 +74,7 @@ Crontab description:
 	
 	1. every day at 23:00 copy_mdf.sh stops SQL Server than copies all database files *.mdf, *.ldf to /srv/data/
 	
-    	2. every day at 23:30 after restart sql server generate script attachall.sql placed with copied data half an hour earlier.
+    2. every day at 23:30 after restart sql server generate script attachall.sql placed with copied data half an hour earlier.
 		
 	3. At 23:15 on Saturday backupall.sh does a full backup with format and init parameter (-fei) to clear .bak file of the running databases into /srv/backup/ and generates the restoreall.sql query needed to restore them placing it with the backups folder. 
 	
@@ -128,14 +126,13 @@ ________________________________________________________________________________
 importants:
 
 1.Full copies are made with INIT,FORMAT parameters, resulting in the creation of a new file. bak and resetting the backup cycle with the writing of this information to the database.
- Differential copies are made with the FORMAT parameter. As a result, we have in the directories with backups the last full copy and the last differential copy.
- Which allows you to recover databases to the state after the full backup, or after the last differential. To recover databases to any point in the past, you need to add a mechanism for archiving directories with .bak. between backup tasks, or create them on a snapshot file system (ZFS, BTRFS). You can also exclude FORMAT and INIT parameters from the scripts, which will result in incrementing .bak files.
+Differential copies are made with the FORMAT parameter. As a result, we have in the directories with backups the last full copy and the last differential copy.
+Which allows you to recover databases to the state after the full backup, or after the last differential. To recover databases to any point in the past, you need to add a mechanism for archiving directories with .bak. between backup tasks, or create them on a snapshot file system (ZFS, BTRFS). You can also exclude FORMAT and INIT parameters from the scripts, which will result in incrementing .bak files.
 However, this will affect the correctness of the restoreall.sql query, which in this version does not support the FILES = n parameter yet, that allows you to specify the archive position in the continuos .bak file.
 Implementing this mechanism is difficult because each database may be created at a different time , and thus will have a different FILES parameter at a given time.
  
- This version of the scripts allows you to extend the period between full backups, as I added a mechanism for identifying newly added databases (after the last full copy), and performing a full backup for them immediately (during a differential copy)
- 
- 
+This version of the scripts allows you to extend the period between full backups, as I added a mechanism for identifying newly created databases (after the last full copy), and performing a full backup for them immediately (during a differential copy)
+  
 I hope that my work will help someone to implement and automate backup or mirror on SQL server for Windows with multiple databases. I would appreciate reporting bugs and suggestions for improving the procedure.
  
 
